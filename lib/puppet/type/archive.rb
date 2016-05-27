@@ -159,6 +159,12 @@ Puppet::Type.newtype(:archive) do
     desc 'proxy address to use when accessing source'
   end
 
+  newparam(:cache) do
+    desc 'flag to define if file should be downloaded to cache dir /var/cache/wget'
+    newvalues(:enabled, :disabled)
+    defaultto(:disabled)
+  end
+
   autorequire(:file) do
     [
       Pathname.new(self[:path]).parent.to_s,

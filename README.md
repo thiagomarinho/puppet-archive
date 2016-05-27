@@ -16,6 +16,7 @@
    * [Network files](#network-files)
    * [Extract customization](#extract-customization)
    * [S3 Bucket](#s3-bucket)
+   * [Cache with wget provider](#cache-with-wget-provider)
 5. [Reference](#reference)
 6. [Development](#development)
 
@@ -264,6 +265,38 @@ archive { '/tmp/gravatar.png':
 ```
 
 NOTE: Alternative s3 provider support can be implemented by overriding the [s3_download method](lib/puppet/provider/archive/ruby.rb):
+
+### Cache with wget provider
+
+To decrease the provision time to test your manifests, you can, if you're using vagrant to make these tests, use [vagrant-cachier](https://github.com/fgrehm/vagrant-cachier) plugin and enable cache to wget provider on Puppet scripts. This feature is disabled by default and it's initialy designed to be used only in local environment, together with the vagrant's plugin. To use it, after install vagrant-cachier plugin, put it into your Vagrantfile:
+
+```ruby
+  if Vagrant.has_plugin?('vagrant-cachier')
+    config.cache.scope = :box # or :machine
+    config.cache.enable :generic, {
+      'wget' => { cache_dir: '/var/cache/wget' },
+    }
+  end
+```
+
+After this, put the following script into a puppet manifest (preferably in your local site.pp, due to this feature's nature):
+
+```puppet
+Archive {
+  provider => 'wget',
+  cache    => enabled,
+}
+```
+
+This way, all archive resources will use wget as provider and caching downloaded files to (unless specified on resource declaration). You can test it using the resource below:
+
+```puppet
+archive { '/tmp/wildfly-10.0.0.Final.zip':
+  ensure => present,
+  source => 'http://download.jboss.org/wildfly/10.0.0.Final/wildfly-10.0.0.Final.zip',
+}
+
+```
 
 ## Reference
 
